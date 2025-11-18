@@ -6,7 +6,17 @@ mermaid.initialize({
   startOnLoad: false,
   theme: "base",
   securityLevel: "loose",
-  flowchart: { useMaxWidth: false, htmlLabels: true, curve: "basis" }
+  maxTextSize: 1000000, // <--- ADDED: Increases text limit to prevent crash on large diagrams
+  flowchart: { 
+    useMaxWidth: false, 
+    htmlLabels: true, 
+    // CHANGE: 'basis' -> 'stepAfter' for clean right angles
+    curve: "stepAfter", 
+    // ADD: Increase spacing to prevent bunching
+    rankSpacing: 80, 
+    nodeSpacing: 30,
+    padding: 20
+  }
 });
 
 interface Props {
