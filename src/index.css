@@ -1,0 +1,422 @@
+:root {
+  --bg-app: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --border-color: #e2e8f0;
+  --primary: #3b82f6;
+  --primary-light: #eff6ff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body,
+html,
+#root {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font-family);
+  background: var(--bg-app);
+  color: var(--text-main);
+  overflow: hidden;
+  /* prevent body scroll */
+}
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  /* Ensures the main window never scrolls */
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  /* Keeps the sidebar container fixed to screen height */
+  min-height: 0;
+  /* Critical: allows the flex container to shrink in Grid */
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  /* Prevents header from shrinking */
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0;
+  min-height: 0;
+  /* Critical: allows this flex item to shrink and show scrollbar */
+}
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  /* Prevents footer from shrinking/disappearing */
+  background: var(--bg-sidebar);
+  /* Ensures content doesn't show through */
+}
+
+.sidebar-footer button {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: white;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-footer button:hover {
+  background: var(--bg-app);
+  color: var(--text-main);
+  border-color: #cbd5e1;
+}
+
+/* Tree Items */
+.tree-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.tree-row:hover {
+  background: var(--bg-app);
+  color: var(--text-main);
+}
+
+.tree-row--selected {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.tree-expander {
+  font-size: 0.65rem;
+  margin-right: 8px;
+  transition: transform 0.2s;
+  color: #94a3b8;
+}
+
+.tree-expander.expanded {
+  transform: rotate(90deg);
+}
+
+.tree-expander.invisible {
+  visibility: hidden;
+}
+
+/* Canvas Area */
+.canvas-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #f1f5f9;
+  /* Grid Background */
+  background-image: radial-gradient(#d7dce4 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  height: 100%;
+  /* Fix height to viewport */
+  overflow: hidden;
+  /* prevent internal overflow affecting layout */
+}
+
+.canvas-header {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  min-width: 300px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.badge {
+  background: var(--text-main);
+  color: white;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.current-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.node-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.canvas-controls-hint {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Diagram Container */
+.diagram-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.diagram-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.diagram-viewport {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.diagram-viewport:active {
+  cursor: grabbing;
+}
+
+.diagram-content {
+  transform-origin: 0 0;
+}
+
+.diagram-tools {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: white;
+  border-radius: 999px;
+  display: flex;
+  gap: 0;
+  padding: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+.diagram-tools button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diagram-tools button:hover {
+  background: #f1f5f9;
+  color: var(--primary);
+}
+
+/* Mermaid Internal Styling Overrides */
+/* Custom labels injected via buildNodeLabel */
+.node-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-family);
+  min-width: 120px;
+}
+
+.node-title {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.node-toggle {
+  font-size: 16px;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.diagram-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Keeps the panning clean */
+  cursor: grab;
+  touch-action: none; /* Prevents browser gestures interfering */
+}
+
+/* This is the div that gets transformed */
+.diagram-content {
+  width: 100%;
+  height: 100%;
+  /* Ensure the transform origin is the center of the view */
+  transform-origin: center center; 
+}
+
+/* Override Mermaid's default width to allow flex centering */
+.diagram-content svg {
+  max-width: none !important; 
+}
+
+/* Tree Items */
+.tree-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  user-select: none;
+  transition: background 0.1s, color 0.1s;
+
+  /* Default Variables (Gray/Ash) */
+  --node-accent: #9CA3AF;
+  --node-bg: #F3F4F6;
+  --node-text: #374151;
+
+  /* Left border indicator (transparent by default) */
+  border-left: 3px solid transparent;
+}
+
+/* Depth Color Mapping (Matches diagrams.ts) */
+.tree-row--depth-0 {
+  --node-accent: #FF5978;
+  --node-bg: #FFDFE5;
+  --node-text: #8E2236;
+}
+
+/* Rose */
+.tree-row--depth-1 {
+  --node-accent: #FBB35A;
+  --node-bg: #FFEFDB;
+  --node-text: #8F632D;
+}
+
+/* Peach */
+.tree-row--depth-2 {
+  --node-accent: #EAB308;
+  --node-bg: #FEF9C3;
+  --node-text: #854D0E;
+}
+
+/* Sun */
+.tree-row--depth-3 {
+  --node-accent: #22C55E;
+  --node-bg: #DCFCE7;
+  --node-text: #14532D;
+}
+
+/* Mint */
+.tree-row--depth-4 {
+  --node-accent: #3B82F6;
+  --node-bg: #DBEAFE;
+  --node-text: #1E3A8A;
+}
+
+/* Sky */
+.tree-row--depth-5 {
+  --node-accent: #8B5CF6;
+  --node-bg: #F3E8FF;
+  --node-text: #581C87;
+}
+
+/* Iris */
+.tree-row--depth-6 {
+  --node-accent: #9CA3AF;
+  --node-bg: #F3F4F6;
+  --node-text: #374151;
+}
+
+/* Ash */
+
+.tree-row:hover {
+  background: #f8fafc;
+  color: var(--text-main);
+}
+
+/* Selected State: Use the specific depth colors */
+.tree-row--selected {
+  background: var(--node-bg) !important;
+  color: var(--node-text) !important;
+  font-weight: 500;
+  border-left-color: var(--node-accent);
+  /* Add a colored strip on the left */
+}
+
+.tree-expander {
+  font-size: 0.65rem;
+  margin-right: 8px;
+  transition: transform 0.2s;
+  color: var(--node-accent);
+  /* The arrow always hints at the color */
+  opacity: 0.7;
+}
+
+.tree-row:hover .tree-expander {
+  opacity: 1;
+}
+
+.tree-expander.expanded {
+  transform: rotate(90deg);
+}
+
+.tree-expander.invisible {
+  visibility: hidden;
+}
