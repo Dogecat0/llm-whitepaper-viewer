@@ -6,13 +6,11 @@ mermaid.initialize({
   startOnLoad: false,
   theme: "base",
   securityLevel: "loose",
-  maxTextSize: 1000000, // <--- ADDED: Increases text limit to prevent crash on large diagrams
+  maxTextSize: 1000000,
   flowchart: { 
     useMaxWidth: false, 
     htmlLabels: true, 
-    // CHANGE: 'basis' -> 'stepAfter' for clean right angles
     curve: "stepAfter", 
-    // ADD: Increase spacing to prevent bunching
     rankSpacing: 80, 
     nodeSpacing: 30,
     padding: 20
@@ -25,7 +23,6 @@ interface Props {
   onNodeClick?: (id: string) => void;
 }
 
-// Define the shape of our viewport state
 interface TransformState {
   x: number;
   y: number;
@@ -39,14 +36,10 @@ const MermaidDiagram: React.FC<Props> = ({ code, clickableNodeIds, onNodeClick }
   const [svgContent, setSvgContent] = useState("");
   const [opacity, setOpacity] = useState(0);
   
-  // Viewport State - Initialize from LocalStorage if available
-  // We explicitly pass <TransformState> to useState to fix inference
   const [transform, setTransform] = useState<TransformState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        return JSON.parse(saved) as TransformState;
-      }
+      if (saved) return JSON.parse(saved) as TransformState;
     } catch (e) {
       console.warn("Failed to load diagram transform state", e);
     }
@@ -58,12 +51,11 @@ const MermaidDiagram: React.FC<Props> = ({ code, clickableNodeIds, onNodeClick }
   const startPos = useRef({ x: 0, y: 0 });
   const hasMoved = useRef(false); // To distinguish click vs drag
 
-  // Save Transform to LocalStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(transform));
   }, [transform]);
 
-  // 1. Render Mermaid
+  // Render Mermaid
   useEffect(() => {
     let isMounted = true;
     const render = async () => {
@@ -83,60 +75,76 @@ const MermaidDiagram: React.FC<Props> = ({ code, clickableNodeIds, onNodeClick }
     return () => { isMounted = false; };
   }, [code]);
 
-  // 2. Attach Click Listeners to Nodes
-  useEffect(() => {
-    if (!containerRef.current || !clickableNodeIds || !onNodeClick) return;
+  // --- Unified Mouse & Touch Handlers ---
 
-    const svgRoot = containerRef.current.querySelector("svg");
-    if (!svgRoot) return;
-
-    svgRoot.style.maxWidth = "none";
-    svgRoot.style.height = "auto";
-
-    clickableNodeIds.forEach(id => {
-      const el = svgRoot.querySelector(`[id^="flowchart-${id}-"]`) as HTMLElement;
-      if (el) {
-        el.style.cursor = "pointer";
-        el.onclick = (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          // Only fire click if we didn't drag
-          if (!hasMoved.current) {
-            onNodeClick(id);
-          }
-        };
-      }
-    });
-  }, [svgContent, clickableNodeIds, onNodeClick]);
-
-  // --- Simplified Event Handlers ---
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault(); // Stop browser native drag
+  const handleStart = (clientX: number, clientY: number) => {
     isDragging.current = true;
     hasMoved.current = false;
-    startPos.current = { x: e.clientX - transform.x, y: e.clientY - transform.y };
+    startPos.current = { x: clientX - transform.x, y: clientY - transform.y };
     document.body.style.cursor = "grabbing";
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMove = (clientX: number, clientY: number) => {
     if (!isDragging.current) return;
     
-    const newX = e.clientX - startPos.current.x;
-    const newY = e.clientY - startPos.current.y;
+    const newX = clientX - startPos.current.x;
+    const newY = clientY - startPos.current.y;
 
-    // If we moved more than 5 pixels, consider it a move (not a click)
-    if (Math.abs(newX - transform.x) > 5 || Math.abs(newY - transform.y) > 5) {
+    // Increased threshold (6px) to allow for clumsy clicks/taps not to register as drags
+    if (Math.abs(newX - transform.x) > 6 || Math.abs(newY - transform.y) > 6) {
       hasMoved.current = true;
     }
 
     setTransform(prev => ({ ...prev, x: newX, y: newY }));
   };
 
-  // Stop dragging on Up or Leave
-  const stopDragging = () => {
+  const handleEnd = () => {
     isDragging.current = false;
     document.body.style.cursor = "";
+  };
+
+  // Mouse Events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent text selection
+    handleStart(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    handleMove(e.clientX, e.clientY);
+  };
+
+  // Touch Events (FIX 2: Added for mobile support)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      handleStart(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
+  // Click Handling via Delegation (FIX 3: Robust click detection)
+  const handleContainerClick = (e: React.MouseEvent | React.TouchEvent) => {
+    // If we dragged, ignore the click
+    if (hasMoved.current) return;
+
+    // Determine target from event
+    const target = e.target as HTMLElement;
+    
+    // Find closest parent that is a node
+    const nodeElement = target.closest('.node');
+    if (nodeElement && nodeElement.id && clickableNodeIds && onNodeClick) {
+      // Extract ID from Mermaid's format "flowchart-{ID}-{hash}"
+      // We look for our known IDs in the element ID
+      const foundId = clickableNodeIds.find(id => nodeElement.id.startsWith(`flowchart-${id}-`));
+      
+      if (foundId) {
+        onNodeClick(foundId);
+      }
+    }
   };
 
   const handleZoom = (factor: number) => {
@@ -152,8 +160,7 @@ const MermaidDiagram: React.FC<Props> = ({ code, clickableNodeIds, onNodeClick }
 
   return (
     <div className="diagram-container">
-      {/* Required Note */}
-      <div style={{
+      <div className="mermaid-tip-box" style={{
         position: "absolute", 
         top: 20, 
         right: 20, 
@@ -168,7 +175,7 @@ const MermaidDiagram: React.FC<Props> = ({ code, clickableNodeIds, onNodeClick }
         pointerEvents: "none",
         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
       }}>
-        <strong>Tip:</strong> If stuck in pan mode, click a expandable node in the sidebar or refresh the page to reset.
+        <strong>Tip:</strong> Scroll/Pinch to Zoom • Drag to Pan
       </div>
 
       <div className="diagram-tools">
@@ -181,10 +188,21 @@ const MermaidDiagram: React.FC<Props> = ({ code, clickableNodeIds, onNodeClick }
         className="diagram-viewport"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={stopDragging}
-        onMouseLeave={stopDragging} 
+        onMouseUp={handleEnd}
+        onMouseLeave={handleEnd} 
+        
+        // Touch Listeners
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleEnd}
+
+        // Click Listener (Delegation)
+        onClick={handleContainerClick}
+        // Handle tap on mobile (some browsers treat tap as click, some need specific handling, 
+        // but onClick usually fires after touchEnd if no default prevented)
+        
         onWheel={(e) => handleZoom(e.deltaY < 0 ? 1.1 : 0.9)}
-        style={{ cursor: "grab" }}
+        style={{ cursor: "grab", touchAction: "none" }} // touch-action: none is CRITICAL for preventing browser scroll
       >
         <div 
           ref={containerRef}
@@ -192,17 +210,22 @@ const MermaidDiagram: React.FC<Props> = ({ code, clickableNodeIds, onNodeClick }
           style={{ 
             transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
             opacity: opacity,
-            // Smooth transition only for opacity, instant for transform to feel responsive
             transition: "opacity 0.2s ease-in-out", 
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             width: "100%",
             height: "100%",
-            transformOrigin: "center center"
+            transformOrigin: "center center",
+            pointerEvents: "none" // Let clicks pass through transform wrapper
           }}
-          dangerouslySetInnerHTML={{ __html: svgContent }} 
-        />
+        >
+           {/* Re-enable pointer events for the actual SVG so we can click it */}
+           <div 
+             style={{ pointerEvents: "auto" }}
+             dangerouslySetInnerHTML={{ __html: svgContent }} 
+           />
+        </div>
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ const fullBookStructure: DiagramNode = {
 
 export const ROOT_NODE = fullBookStructure;
 
-// --- MERMAID LOGIC BELOW (Unchanged) ---
+// --- MERMAID LOGIC BELOW ---
 
 // HTML Helpers
 const escapeHtml = (value: string) =>
@@ -60,19 +60,41 @@ const getClassForDepth = (depth: number) => {
 };
 
 export const buildMermaidDocument = (root: DiagramNode, expandedIds: Set<string>): string => {
-  const nodeLines: string[] = [];
+  // We use a single list for definitions to ensure subgraphs wrap nodes correctly in order
+  const definitionLines: string[] = [];
   const edgeLines: string[] = [];
   const classAssignments: string[] = [];
 
   const walk = (node: DiagramNode, depth: number) => {
     const isExpanded = expandedIds.has(node.id);
-    nodeLines.push(`  ${node.id}["${buildNodeLabel(node, isExpanded)}"]`);
+    
+    // 1. Define the Node
+    definitionLines.push(`  ${node.id}["${buildNodeLabel(node, isExpanded)}"]`);
     classAssignments.push(`  class ${node.id} ${getClassForDepth(depth)}`);
 
+    // 2. If expanded, process children
     if (node.children && node.children.length > 0 && isExpanded) {
+      
+      // --- THE FIX: WRAP CHILDREN IN AN INVISIBLE SUBGRAPH ---
+      // This forces Mermaid to keep these nodes physically grouped together
+      // and prevents them from mixing with siblings' children.
+      const sgId = `sg_${node.id.replace(/-/g, "_")}`;
+      
+      definitionLines.push(`  subgraph ${sgId} [" "]`); // Empty label
+      definitionLines.push(`    direction LR`);         // Ensure flow continues Left-Right
+      definitionLines.push(`    style ${sgId} fill:none,stroke:none`); // Make it invisible
+
+      // Recursively define children inside this subgraph block
+      node.children.forEach((child) => {
+        walk(child, depth + 1);
+      });
+
+      definitionLines.push(`  end`); 
+      // -------------------------------------------------------
+
+      // 3. Define Edges (Parent -> Child)
       node.children.forEach((child) => {
         edgeLines.push(`  ${node.id} --> ${child.id}`);
-        walk(child, depth + 1);
       });
     }
   };
@@ -90,7 +112,14 @@ export const buildMermaidDocument = (root: DiagramNode, expandedIds: Set<string>
     "linkStyle default stroke:#cbd5e1,stroke-width:2px,fill:none"
   ];
 
-  return ["flowchart LR", ...styles, ...nodeLines, ...edgeLines, ...classAssignments].join("\n");
+  // Combine all parts
+  return [
+    "flowchart LR", 
+    ...styles, 
+    ...definitionLines, 
+    ...edgeLines, 
+    ...classAssignments
+  ].join("\n");
 };
 
 export const collectAllNodeIds = (node: DiagramNode): string[] => {

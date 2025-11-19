@@ -75,9 +75,27 @@ const TreeItem: React.FC<{
 };
 
 const App: React.FC = () => {
-  // ... existing code ...
-  // (The rest of the file remains unchanged)
-  
+  // --- Responsive & UI State ---
+  // FIX 1: Initialize based on screen width to prevent mobile popup on refresh
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // Only auto-close if transitioning TO mobile, don't force close on every resize
+      if (mobile && window.innerWidth >= 768) setIsSidebarOpen(false);
+    };
+    
+    // Run once
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // --- Persistence Logic ---
   
   // Load Selected ID
@@ -86,7 +104,7 @@ const App: React.FC = () => {
     return saved || ROOT_NODE.id;
   });
 
-  // Load Expanded IDs (Convert Array -> Set)
+  // Load Expanded IDs
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
     const saved = localStorage.getItem("llm-whitepaper-expanded");
     if (saved) {
@@ -99,12 +117,10 @@ const App: React.FC = () => {
     return new Set([ROOT_NODE.id]);
   });
 
-  // Save Selected ID when it changes
   useEffect(() => {
     localStorage.setItem("llm-whitepaper-selected", selectedId);
   }, [selectedId]);
 
-  // Save Expanded IDs when they change (Convert Set -> Array)
   useEffect(() => {
     localStorage.setItem("llm-whitepaper-expanded", JSON.stringify(Array.from(expandedIds)));
   }, [expandedIds]);
@@ -127,9 +143,11 @@ const App: React.FC = () => {
 
   const handleSelect = useCallback((id: string) => {
     setSelectedId(id);
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
   }, []);
 
-  // Interaction from Diagram
   const handleDiagramClick = useCallback((id: string) => {
     setSelectedId(id);
     if (expandableIds.includes(id)) {
@@ -138,11 +156,22 @@ const App: React.FC = () => {
   }, [expandableIds, handleToggle]);
 
   return (
-    <div className="layout">
+    <div className={`layout ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+      
+      <div 
+        className={`mobile-backdrop ${isSidebarOpen ? "visible" : ""}`} 
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2>Explorer</h2>
-          <p>LLM Whitepaper</p>
+          <div className="sidebar-title-row">
+            <div>
+              <h2>Explorer</h2>
+              <p>LLM Whitepaper</p>
+            </div>
+            <button className="icon-btn close-sidebar-btn" onClick={() => setIsSidebarOpen(false)}>✕</button>
+          </div>
         </div>
         <div className="sidebar-content">
           <TreeItem
@@ -162,11 +191,21 @@ const App: React.FC = () => {
 
       <main className="canvas-area">
         <div className="canvas-header">
-          <div className="breadcrumb">
-             <span className="badge">Selected Node</span>
-             <span className="current-title">{selectedNode.title}</span>
+          <button 
+            className="icon-btn toggle-sidebar-btn" 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            title={isSidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+          >
+            {isSidebarOpen ? "◀" : "☰"}
+          </button>
+
+          <div className="header-info">
+            <div className="breadcrumb">
+              <span className="badge">Selected</span>
+              <span className="current-title">{selectedNode.title}</span>
+            </div>
+            {selectedNode.description && <div className="node-desc">{selectedNode.description}</div>}
           </div>
-          {selectedNode.description && <div className="node-desc">{selectedNode.description}</div>}
         </div>
 
         <div className="diagram-wrapper">
@@ -178,7 +217,7 @@ const App: React.FC = () => {
         </div>
         
         <div className="canvas-controls-hint">
-          Scroll to Zoom • Drag to Pan • Click nodes to expand
+          {isMobile ? "Drag to Pan • Tap nodes" : "Scroll to Zoom • Drag to Pan • Click nodes to expand"}
         </div>
       </main>
     </div>
