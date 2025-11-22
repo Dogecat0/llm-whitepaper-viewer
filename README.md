@@ -1,42 +1,28 @@
-# LLM Whitepaper – Mermaid Explorer
+# LLM Whitepaper Navigator
 
-Interactive viewer for the Mermaid diagrams generated from the “Foundational Large Language Models & Text Generation” whitepaper.
-
-The site is a static React app: a hierarchical navigation on the left, and a zoomable, pannable Mermaid diagram on the right. Each node in the hierarchy corresponds to a section or sub-section of the whitepaper.
-
----
+Interactive React/Vite viewer for the “Foundational Large Language Models & Text Generation” whitepaper. The app presents each chapter as cards and list items, with certain sections switching into animated infographic layouts.
 
 ## Features
+- Chapter overview with nested cards for subtopics and leaf details
+- Interactive layouts powered by Framer Motion (`timeline`, `process`) for designated sections
+- Selection persisted in `localStorage` so the last viewed node reopens on refresh
+- Content is data-driven: chapters live in `src/chapters/`, aggregated in `src/diagrams.ts`
+- Lucide icons for quick visual anchors on chapter cards
 
-- Tree navigation of whitepaper sections with expandable / collapsible nodes
-- Renders Mermaid diagrams client-side
-- Click a node to load its diagram
-- Zoom in / out with mouse wheel or toolbar buttons
-- Pan diagrams by clicking + dragging
-- Fully static build, suitable for GitHub Pages
+## Scripts
+- `npm run dev` — start Vite with HMR
+- `npm run build` — type-check then build for production
+- `npm run preview` — serve the production build locally
+- `npm run lint` — run ESLint on `src/`
 
----
+## Project layout
+- `src/main.tsx` mounts `<App />`
+- `src/App.tsx` loads the selected node and hands it to `InfographicView`
+- `src/InfographicView.tsx` renders cards and switches to `AnimatedTimeline` or `AnimatedProcess` when a node declares a `layout`
+- `src/components/AnimatedTimeline.tsx` and `AnimatedProcess.tsx` contain the framer-motion animations
+- `src/chapters/` holds the structured content; `src/types.ts` defines `DiagramNode`
+- `public/` carries static assets emitted as-is by Vite
 
-## Tech stack
-
-- [React](https://react.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/)
-- [Mermaid](https://mermaid.js.org/) (for diagram rendering)
-- [gh-pages](https://www.npmjs.com/package/gh-pages) (for deployment)
-
----
-
-## Getting started
-
-### Prerequisites
-
-- Node.js (LTS) + npm
-
-### Install
-
-```bash
-git clone https://github.com/<your-username>/<your-repo-name>.git
-cd <your-repo-name>
-npm install
-```
+## Notes
+- Some IDs are reused across chapters, so navigation uses full ancestry paths internally; keep IDs unique within a given level to avoid confusion when adding content.
+- Mermaid utilities are still available in `src/diagrams.ts` but the current UI renders the infographic views instead.
