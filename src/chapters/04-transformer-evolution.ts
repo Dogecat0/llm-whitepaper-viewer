@@ -8,10 +8,12 @@ export const chapter4: DiagramNode = {
     {
       id: "B",
       title: "GPT series (GPT-1 to GPT-4)",
+      layout: 'timeline',
       children: [
         {
           id: "B1",
           title: "GPT-1: decoder-only model with unsupervised pretraining",
+          icon: "1",
           children: [
             { id: "B1a", title: "Pretraining on BooksCorpus (unlabeled books) to learn general language patterns" },
             { id: "B1b", title: "Task-aware input transformations unify structured NLP tasks into plain text sequences" },
@@ -21,6 +23,7 @@ export const chapter4: DiagramNode = {
         {
           id: "B2",
           title: "GPT-2: scaled decoder-only language model",
+          icon: "2",
           children: [
             { id: "B2a", title: "10× parameter increase and WebText dataset of high-quality web pages" },
             { id: "B2b", title: "Improved long-range coherence and commonsense text modeling" },
@@ -30,6 +33,7 @@ export const chapter4: DiagramNode = {
         {
           id: "B3",
           title: "GPT-3 / InstructGPT / GPT-3.5 / GPT-4",
+          icon: "3+",
           children: [
             { id: "B3a", title: "GPT-3: 175B parameters enabling strong in-context and few-shot learning" },
             { id: "B3b", title: "InstructGPT: supervised fine-tuning and RLHF for better alignment and safety" },

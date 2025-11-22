@@ -1,0 +1,162 @@
+/* src/infographic.css */
+
+.infographic-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    /* overflow-y: auto;  Removed to fix scrollbar position */
+    /* height: 100%;      Removed to fix scrollbar position */
+    box-sizing: border-box;
+}
+
+.infographic-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.infographic-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.03em;
+}
+
+.infographic-desc {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 800px;
+    margin: 1rem auto 0;
+    line-height: 1.6;
+}
+
+.infographic-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-bottom: 4rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.infographic-card {
+    background: #111111;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #333333;
+    display: flex;
+    flex-direction: column;
+}
+
+.infographic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    border-color: #555;
+}
+
+.card-header {
+    background: #1a1a1a;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #333333;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #222;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    border: 1px solid #333;
+}
+
+.card-body {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+.card-desc {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.card-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.card-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.card-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1;
+    top: 0.1rem;
+}
+
+.card-list li:hover {
+    color: #ffffff;
+}
+
+.card-chevron {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.card-chevron.expanded {
+    transform: rotate(90deg);
+    color: var(--text-main);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .infographic-container {
+        padding: 1rem;
+    }
+
+    .infographic-title {
+        font-size: 1.75rem;
+    }
+}

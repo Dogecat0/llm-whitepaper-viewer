@@ -98,10 +98,12 @@ export const chapter5: DiagramNode = {
     {
       id: "E",
       title: "Reinforcement Learning from Human Feedback (RLHF)",
+      layout: 'process',
       children: [
         {
           id: "E1",
           title: "Reward model (RM) training",
+          icon: "RM",
           children: [
             {
               id: "E1a",
@@ -116,6 +118,7 @@ export const chapter5: DiagramNode = {
         {
           id: "E2",
           title: "Policy optimization with RL",
+          icon: "RL",
           children: [
             {
               id: "E2a",
@@ -130,6 +133,7 @@ export const chapter5: DiagramNode = {
         {
           id: "E3",
           title: "Extensions and alternatives",
+          icon: "Ext",
           children: [
             {
               id: "E3a",

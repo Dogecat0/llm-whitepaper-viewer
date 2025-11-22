@@ -1,11 +1,11 @@
 :root {
-  --bg-app: #f8fafc;
-  --bg-sidebar: #ffffff;
-  --border-color: #e2e8f0;
-  --primary: #3b82f6;
-  --primary-light: #eff6ff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
+  --bg-app: #0a0a0a;
+  --bg-sidebar: #111111;
+  --border-color: #333333;
+  --primary: #ffffff;
+  --primary-light: #222222;
+  --text-main: #ffffff;
+  --text-muted: #888888;
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Sidebar Configuration */
@@ -74,6 +74,7 @@ html,
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--text-main);
 }
 
 .sidebar-header p {
@@ -102,7 +103,7 @@ html,
   flex: 1;
   padding: 0.5rem;
   border: 1px solid var(--border-color);
-  background: white;
+  background: #222;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -112,9 +113,9 @@ html,
 }
 
 .sidebar-footer button:hover {
-  background: var(--bg-app);
+  background: #333;
   color: var(--text-main);
-  border-color: #cbd5e1;
+  border-color: #444;
 }
 
 /* --- Canvas Area --- */
@@ -124,8 +125,8 @@ html,
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: #f1f5f9;
-  background-image: radial-gradient(#d7dce4 1.5px, transparent 1.5px);
+  background-color: #000000;
+  background-image: radial-gradient(#333333 1.5px, transparent 1.5px);
   background-size: 24px 24px;
   height: 100%;
   overflow: hidden;
@@ -153,7 +154,7 @@ html,
 }
 
 .icon-btn {
-  background: white;
+  background: #222;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   width: 36px;
@@ -164,23 +165,23 @@ html,
   cursor: pointer;
   color: var(--text-muted);
   font-size: 1.1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s;
   flex-shrink: 0;
 }
 
 .icon-btn:hover {
-  background: var(--bg-app);
+  background: #333;
   color: var(--primary);
 }
 
 .header-info {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  border: 1px solid white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #333;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   flex: 1;
   max-width: 600px;
   /* Prevent it from stretching too wide */
@@ -195,7 +196,7 @@ html,
 
 .badge {
   background: var(--text-main);
-  color: white;
+  color: black;
   font-size: 0.65rem;
   text-transform: uppercase;
   font-weight: 700;
@@ -209,6 +210,7 @@ html,
   font-weight: 600;
   font-size: 1rem;
   line-height: 1.2;
+  color: var(--text-main);
 }
 
 .node-desc {
@@ -220,6 +222,7 @@ html,
   /* Truncate description visually on very small screens if needed */
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -229,8 +232,8 @@ html,
   bottom: 1rem;
   right: 1rem;
   font-size: 0.75rem;
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.5);
+  color: #666;
+  background: rgba(0, 0, 0, 0.5);
   padding: 4px 8px;
   border-radius: 4px;
   pointer-events: none;
@@ -242,7 +245,8 @@ html,
   flex: 1;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  /* Enable scrolling here */
   position: relative;
 }
 

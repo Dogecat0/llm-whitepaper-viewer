@@ -1,6 +1,18 @@
 // src/diagrams.ts
 import type { DiagramNode } from "./types";
 
+import {
+  BookOpen,
+  Zap,
+  Brain,
+  Layers,
+  Sliders,
+  MessageSquare,
+  Cpu,
+  Globe
+} from "lucide-react";
+import React from "react";
+
 // Import your chapters
 import { chapter1 } from "./chapters/01-intro";
 import { chapter2 } from "./chapters/02-why-llm-is-important";
@@ -20,14 +32,14 @@ const fullBookStructure: DiagramNode = {
   title: "Foundational Large Language Models & Text Generation",
   description: "A comprehensive guide to the foundations of Large Language Models.",
   children: [
-    chapter1,
-    chapter2,
-    chapter3,
-    chapter4,
-    chapter5,
-    chapter6,
-    chapter7,
-    chapter8
+    { ...chapter1, icon: React.createElement(BookOpen) },
+    { ...chapter2, icon: React.createElement(Zap) },
+    { ...chapter3, icon: React.createElement(Brain) },
+    { ...chapter4, icon: React.createElement(Layers) },
+    { ...chapter5, icon: React.createElement(Sliders) },
+    { ...chapter6, icon: React.createElement(MessageSquare) },
+    { ...chapter7, icon: React.createElement(Cpu) },
+    { ...chapter8, icon: React.createElement(Globe) }
   ]
 };
 
@@ -43,7 +55,7 @@ const escapeForMermaid = (value: string) => value.replace(/\\/g, "\\\\");
 const buildNodeLabel = (node: DiagramNode, expanded: boolean) => {
   const hasChildren = node.children && node.children.length > 0;
   const icon = hasChildren ? (expanded ? "−" : "+") : "";
-  
+
   return escapeForMermaid(`
     <div class='node-container'>
       <div class='node-title'>${escapeHtml(node.title)}</div>
@@ -67,19 +79,19 @@ export const buildMermaidDocument = (root: DiagramNode, expandedIds: Set<string>
 
   const walk = (node: DiagramNode, depth: number) => {
     const isExpanded = expandedIds.has(node.id);
-    
+
     // 1. Define the Node
     definitionLines.push(`  ${node.id}["${buildNodeLabel(node, isExpanded)}"]`);
     classAssignments.push(`  class ${node.id} ${getClassForDepth(depth)}`);
 
     // 2. If expanded, process children
     if (node.children && node.children.length > 0 && isExpanded) {
-      
+
       // --- THE FIX: WRAP CHILDREN IN AN INVISIBLE SUBGRAPH ---
       // This forces Mermaid to keep these nodes physically grouped together
       // and prevents them from mixing with siblings' children.
       const sgId = `sg_${node.id.replace(/-/g, "_")}`;
-      
+
       definitionLines.push(`  subgraph ${sgId} [" "]`); // Empty label
       definitionLines.push(`    direction LR`);         // Ensure flow continues Left-Right
       definitionLines.push(`    style ${sgId} fill:none,stroke:none`); // Make it invisible
@@ -89,7 +101,7 @@ export const buildMermaidDocument = (root: DiagramNode, expandedIds: Set<string>
         walk(child, depth + 1);
       });
 
-      definitionLines.push(`  end`); 
+      definitionLines.push(`  end`);
       // -------------------------------------------------------
 
       // 3. Define Edges (Parent -> Child)
@@ -114,10 +126,10 @@ export const buildMermaidDocument = (root: DiagramNode, expandedIds: Set<string>
 
   // Combine all parts
   return [
-    "flowchart LR", 
-    ...styles, 
-    ...definitionLines, 
-    ...edgeLines, 
+    "flowchart LR",
+    ...styles,
+    ...definitionLines,
+    ...edgeLines,
     ...classAssignments
   ].join("\n");
 };
