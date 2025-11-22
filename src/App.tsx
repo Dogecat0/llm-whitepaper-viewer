@@ -6,32 +6,47 @@ import {
   type DiagramNode,
 } from "./diagrams";
 
-// --- Recursive Helper to find node by ID ---
-const findNodeById = (node: DiagramNode, targetId: string): DiagramNode | null => {
-  if (node.id === targetId) return node;
-  if (!node.children) return null;
-  for (const child of node.children) {
-    const match = findNodeById(child, targetId);
-    if (match) return match;
+const STORAGE_KEY = "llm-whitepaper-selected-path";
+const PATH_DELIMITER = ">";
+
+// --- Recursive Helper to find node by path (uses ancestry to avoid ID collisions) ---
+const findNodeByPath = (node: DiagramNode, path: string): DiagramNode | null => {
+  const parts = path.split(PATH_DELIMITER).filter(Boolean);
+  if (parts.length === 0) return node;
+  if (parts[0] !== node.id) return null;
+
+  let current: DiagramNode = node;
+  for (let i = 1; i < parts.length; i += 1) {
+    const next = current.children?.find((child) => child.id === parts[i]);
+    if (!next) return null;
+    current = next;
   }
-  return null;
+
+  return current;
 };
 
 const App: React.FC = () => {
   // --- Persistence Logic ---
-  const [selectedId, setSelectedId] = useState(() => {
-    const saved = localStorage.getItem("llm-whitepaper-selected");
-    return saved || ROOT_NODE.id;
+  const [selectedPath, setSelectedPath] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const node = findNodeByPath(ROOT_NODE, saved);
+      if (node) return saved;
+    }
+    return ROOT_NODE.id;
   });
 
   useEffect(() => {
-    localStorage.setItem("llm-whitepaper-selected", selectedId);
-  }, [selectedId]);
+    localStorage.setItem(STORAGE_KEY, selectedPath);
+  }, [selectedPath]);
 
-  const selectedNode = useMemo(() => findNodeById(ROOT_NODE, selectedId) || ROOT_NODE, [selectedId]);
+  const selectedNode = useMemo(
+    () => findNodeByPath(ROOT_NODE, selectedPath) || ROOT_NODE,
+    [selectedPath],
+  );
 
-  const handleNodeClick = useCallback((id: string) => {
-    setSelectedId(id);
+  const handleNodeClick = useCallback((path: string) => {
+    setSelectedPath(path);
   }, []);
 
   return (
@@ -40,6 +55,8 @@ const App: React.FC = () => {
         <div className="diagram-wrapper">
           <InfographicView
             node={selectedNode}
+            currentPath={selectedPath}
+            pathDelimiter={PATH_DELIMITER}
             onNodeClick={handleNodeClick}
           />
         </div>

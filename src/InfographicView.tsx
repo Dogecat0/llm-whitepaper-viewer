@@ -4,14 +4,18 @@ import './infographic.css';
 
 interface InfographicViewProps {
     node: DiagramNode;
-    onNodeClick?: (id: string) => void;
+    onNodeClick?: (path: string) => void;
+    currentPath: string;
+    pathDelimiter?: string;
 }
 
 // Recursive component for list items
 const RecursiveListItem: React.FC<{
     node: DiagramNode;
-    onNodeClick?: (id: string) => void;
-}> = ({ node, onNodeClick }) => {
+    onNodeClick?: (path: string) => void;
+    nodePath: string;
+    pathDelimiter: string;
+}> = ({ node, onNodeClick, nodePath, pathDelimiter }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const hasChildren = node.children && node.children.length > 0;
     const isInteractive = !!node.layout;
@@ -19,7 +23,7 @@ const RecursiveListItem: React.FC<{
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (isInteractive) {
-            onNodeClick?.(node.id);
+            onNodeClick?.(nodePath);
             return;
         }
         if (hasChildren) {
@@ -60,7 +64,9 @@ const RecursiveListItem: React.FC<{
                         <RecursiveListItem
                             key={child.id}
                             node={child}
+                            nodePath={`${nodePath}${pathDelimiter}${child.id}`}
                             onNodeClick={onNodeClick}
+                            pathDelimiter={pathDelimiter}
                         />
                     ))}
                 </ul>
@@ -74,10 +80,17 @@ import { AnimatedTimeline } from './components/AnimatedTimeline';
 import { ROOT_NODE } from './diagrams';
 import { ArrowLeft } from 'lucide-react';
 
-export const InfographicView: React.FC<InfographicViewProps> = ({ node, onNodeClick }) => {
+export const InfographicView: React.FC<InfographicViewProps> = ({
+    node,
+    onNodeClick,
+    currentPath,
+    pathDelimiter = '>'
+}) => {
     // Helper to get initials for the icon
     const getInitials = (title: string) => title.substring(0, 2).toUpperCase();
     const [expandedCardIds, setExpandedCardIds] = React.useState<Set<string>>(new Set());
+
+    const buildChildPath = (childId: string) => `${currentPath}${pathDelimiter}${childId}`;
 
     const toggleCard = (id: string) => {
         setExpandedCardIds(prev => {
@@ -195,6 +208,7 @@ export const InfographicView: React.FC<InfographicViewProps> = ({ node, onNodeCl
                     const hasSubItems = child.children && child.children.length > 0;
                     const isExpanded = expandedCardIds.has(child.id);
                     const isInteractive = !!child.layout;
+                    const childPath = buildChildPath(child.id);
 
                     return (
                         <div
@@ -202,7 +216,7 @@ export const InfographicView: React.FC<InfographicViewProps> = ({ node, onNodeCl
                             className={`infographic-card ${isExpanded ? 'expanded' : ''}`}
                             onClick={() => {
                                 if (isInteractive) {
-                                    onNodeClick?.(child.id);
+                                    onNodeClick?.(childPath);
                                 } else if (hasSubItems) {
                                     toggleCard(child.id);
                                 }
@@ -248,7 +262,9 @@ export const InfographicView: React.FC<InfographicViewProps> = ({ node, onNodeCl
                                             <RecursiveListItem
                                                 key={grandchild.id}
                                                 node={grandchild}
+                                                nodePath={`${childPath}${pathDelimiter}${grandchild.id}`}
                                                 onNodeClick={onNodeClick}
+                                                pathDelimiter={pathDelimiter}
                                             />
                                         ))}
                                     </ul>
